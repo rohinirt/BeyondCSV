@@ -1,9 +1,9 @@
 [theme]
 base = "light"
-primaryColor = "#0f766e"
-backgroundColor = "#f1f7f7"
-secondaryBackgroundColor = "#e6f1f1"
-textColor = "#0e2a2d"
+primaryColor = "#4338ca"
+backgroundColor = "#f5f6fb"
+secondaryBackgroundColor = "#eef0f8"
+textColor = "#161a2c"
 
 [server]
 # Files are read in the visitor's browser, so this limit does not apply to
