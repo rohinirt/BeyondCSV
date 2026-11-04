@@ -1,1 +1,16 @@
+[theme]
+base = "light"
+primaryColor = "#0f766e"
+backgroundColor = "#f1f7f7"
+secondaryBackgroundColor = "#e6f1f1"
+textColor = "#0e2a2d"
 
+[server]
+# Files are read in the visitor's browser, so this limit does not apply to
+# BeyondCSV uploads. Kept at Streamlit's maximum-friendly value for any future
+# st.file_uploader use.
+maxUploadSize = 1000
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
