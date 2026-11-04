@@ -53,7 +53,9 @@ FIT_SCRIPT = """
 @st.cache_data(show_spinner=False)
 def load_app_html() -> str:
     html = (Path(__file__).parent / "beyondcsv.html").read_text(encoding="utf-8")
-    return html.replace("</body>", FIT_SCRIPT + "</body>", 1) if "</body>" in html else html + FIT_SCRIPT
+    # Append (do not search for </body>: the app's JavaScript contains that text
+    # inside a string, so a search would split the code and break the page).
+    return html + FIT_SCRIPT
 
 
 html = load_app_html()
