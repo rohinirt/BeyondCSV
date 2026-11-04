@@ -4,8 +4,8 @@ Run locally:  streamlit run app.py
 
 The whole workspace (Dashboard, Data Explorer, Data Operations, Data Cleaning,
 Data Transformation, Export & Reports) is one self-contained HTML/JavaScript
-file, beyondcsv.html. Streamlit serves it full-page. Your CSV is read inside the
-visitor's browser tab and is never sent to the Streamlit server.
+file, beyondcsv.html. Streamlit shows it full-window. Your CSV is read inside
+the visitor's browser tab and is never sent to the Streamlit server.
 """
 
 from pathlib import Path
@@ -19,43 +19,30 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Remove Streamlit's own chrome and padding so the app fills the page.
+# Hide Streamlit's own chrome and pin the app to the full browser window.
+# The app scrolls inside its own frame, so the outer page must not scroll
+# (this is what removes the second scrollbar).
 st.markdown(
     """
     <style>
+      html, body, .stApp, [data-testid="stApp"], [data-testid="stAppViewContainer"],
+      [data-testid="stMain"], section.main { overflow: hidden !important; height: 100vh !important; }
       header[data-testid="stHeader"], footer, #MainMenu,
       div[data-testid="stToolbar"], div[data-testid="stDecoration"] { display: none !important; }
       .block-container, [data-testid="stMainBlockContainer"], [data-testid="stAppViewBlockContainer"] {
         padding: 0 !important; max-width: 100% !important; }
       [data-testid="stVerticalBlock"] { gap: 0 !important; }
-      iframe { border: 0 !important; display: block; width: 100% !important; }
+      iframe { position: fixed !important; top: 0; left: 0; width: 100vw !important;
+               height: 100vh !important; border: 0 !important; z-index: 5; }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Resize the iframe to the browser window so the app uses the full screen height.
-FIT_SCRIPT = """
-<script>
-(function () {
-  function fit() {
-    try {
-      var f = window.frameElement;
-      if (f && window.parent) f.style.height = Math.max(640, window.parent.innerHeight - 4) + 'px';
-    } catch (e) {}
-  }
-  fit(); window.addEventListener('resize', fit);
-})();
-</script>
-"""
-
 
 @st.cache_data(show_spinner=False)
 def load_app_html() -> str:
-    html = (Path(__file__).parent / "beyondcsv.html").read_text(encoding="utf-8")
-    # Append (do not search for </body>: the app's JavaScript contains that text
-    # inside a string, so a search would split the code and break the page).
-    return html + FIT_SCRIPT
+    return (Path(__file__).parent / "beyondcsv.html").read_text(encoding="utf-8")
 
 
 html = load_app_html()
@@ -64,4 +51,4 @@ if hasattr(st, "iframe"):  # newer Streamlit (components.v1.html is deprecated)
 else:  # older Streamlit
     import streamlit.components.v1 as components
 
-    components.html(html, height=900, scrolling=True)
+    components.html(html, height=900, scrolling=False)
