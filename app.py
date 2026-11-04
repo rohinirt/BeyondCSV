@@ -11,7 +11,6 @@ visitor's browser tab and is never sent to the Streamlit server.
 from pathlib import Path
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="BeyondCSV - Explore. Clean. Transform. Analyse.",
@@ -26,9 +25,10 @@ st.markdown(
     <style>
       header[data-testid="stHeader"], footer, #MainMenu,
       div[data-testid="stToolbar"], div[data-testid="stDecoration"] { display: none !important; }
-      .block-container { padding: 0 !important; max-width: 100% !important; }
-      section.main > div { padding: 0 !important; }
-      iframe { border: 0; display: block; }
+      .block-container, [data-testid="stMainBlockContainer"], [data-testid="stAppViewBlockContainer"] {
+        padding: 0 !important; max-width: 100% !important; }
+      [data-testid="stVerticalBlock"] { gap: 0 !important; }
+      iframe { border: 0 !important; display: block; width: 100% !important; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -56,4 +56,10 @@ def load_app_html() -> str:
     return html.replace("</body>", FIT_SCRIPT + "</body>", 1) if "</body>" in html else html + FIT_SCRIPT
 
 
-components.html(load_app_html(), height=900, scrolling=True)
+html = load_app_html()
+if hasattr(st, "iframe"):  # newer Streamlit (components.v1.html is deprecated)
+    st.iframe(html, height=900, width="stretch")
+else:  # older Streamlit
+    import streamlit.components.v1 as components
+
+    components.html(html, height=900, scrolling=True)
