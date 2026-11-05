@@ -244,6 +244,21 @@ th.sortable { cursor: pointer; user-select: none; white-space: nowrap; } th.sort
 .tablewrap.rows table.has-sel tbody tr:not(.sel) td { opacity: .45; } tbody tr.sel td { background: var(--accent-soft); box-shadow: inset 0 1px 0 var(--accent), inset 0 -1px 0 var(--accent); }
 .hbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; }
 .colgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr)); gap: 0 18px; }
+/* Round 6 */
+.logo { background: linear-gradient(145deg, var(--accent), color-mix(in srgb, var(--accent) 62%, #000)); box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 40%, transparent); }
+.logo svg { width: 24px; height: 24px; } .brand { cursor: pointer; } .brand .t, .bc { color: var(--accent); }
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 8px; font-size: .84rem; } .pager .sp { flex: 1; }
+#landing { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 24px; overflow: auto; background: radial-gradient(1100px 600px at 20% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%), var(--bg); transition: opacity .45s, transform .45s; }
+#landing.out { opacity: 0; transform: scale(1.02); pointer-events: none; }
+#landing .l-in { width: min(860px, 100%); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+#landing .logo.big { width: 76px; height: 76px; border-radius: 22px; } #landing .logo.big svg { width: 54px; height: 54px; }
+#landing h1 { font-size: clamp(2.6rem, 8vw, 4.6rem); letter-spacing: -0.035em; color: var(--accent); line-height: 1; margin: 6px 0 0; font-weight: 800; } 
+#landing .l-sub { font-size: clamp(1.05rem, 2.6vw, 1.45rem); color: var(--muted); margin: 0; }
+#landing .l-tags { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; } #landing .l-tags span { border: 1.5px solid var(--accent); color: var(--accent); border-radius: 99px; padding: 5px 16px; font-weight: 600; font-size: .9rem; }
+#landing .l-feats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; width: 100%; margin: 14px 0 6px; }
+#landing .l-f { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 14px; display: flex; flex-direction: column; gap: 4px; align-items: center; box-shadow: var(--shadow); } #landing .l-f small { color: var(--muted); font-size: .8rem; line-height: 1.35; }
+#landing .l-ic { width: 38px; height: 38px; border-radius: 11px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; } #landing .l-ic svg { width: 20px; height: 20px; }
+#landing .l-go { font-size: 1.1rem; padding: 14px 34px; border-radius: 14px; margin-top: 8px; } #landing .l-foot { color: var(--muted); font-size: .8rem; margin: 0; }
 /* Round 5 */
 .side { background: var(--side-bg); border: 1px solid var(--line); border-radius: 18px; padding: 20px 12px; margin-block: 12px; height: calc(100vh - 24px); box-shadow: var(--shadow); }
 .nav-item.on, .nav-item.on:hover:not(:disabled) { background: var(--accent); color: var(--on-accent); } .nav-item.on svg { color: var(--on-accent); }
@@ -1753,7 +1768,7 @@ const I = {
   trash: ic('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'),
   copy: ic('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>'),
   up: ic('<path d="M6 15l6-6 6 6"/>'), down: ic('<path d="M6 9l6 6 6-6"/>'), plus: ic('<path d="M12 5v14M5 12h14"/>'),
-  logo: ic('<path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>'),
+  logo: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.2" y="2.2" width="19.6" height="19.6" rx="4.6" stroke="currentColor" stroke-width="1.1" opacity=".6"/><text x="12" y="17.3" text-anchor="middle" font-family="Georgia, \'Times New Roman\', serif" font-weight="700" font-size="15.5" fill="currentColor">B</text></svg>',
 };
 
 /* ------------------------------------------------------------ state */
@@ -1761,7 +1776,7 @@ const S = { datasets: [], activeId: null, page: 'dashboard', tab: { explorer: 'o
 const cond = () => ({ col: '', op: 'eq', v: '', v2: '' });
 const U = {
   imp: { delim: '', enc: '' }, prevRows: 10,
-  f: { mode: 'all', cs: false, action: 'keep', conds: [cond()], sorts: [] },
+  f: { mode: 'all', cs: false, action: 'keep', conds: [cond()], sorts: [], page: 0, ps: 25 },
   cols: { stamp: 0, draft: null },
   rows: { stamp: 0, sel: new Set(), page: 0, from: '', to: '' },
   sample: { kind: 'n', n: 50, pct: 10, seed: 42, replace: false, keep: true },
@@ -1867,7 +1882,7 @@ function tableHTML(t, o = {}) {
     const k = U.f.sorts.findIndex((s) => s.col === c), ind = k < 0 ? '' : `<span class="si">${U.f.sorts[k].dir === 'asc' ? '\u25b2' : '\u25bc'}${U.f.sorts.length > 1 ? k + 1 : ''}</span>`;
     return `<th class="${nums[i] ? 'num' : ''} sortable" data-act="sort-col" data-col="${esc(c)}" tabindex="0" role="button" title="Click to sort" aria-sort="${k < 0 ? 'none' : U.f.sorts[k].dir === 'asc' ? 'ascending' : 'descending'}">${esc(c)}${ind}</th>`;
   }).join('') + '</tr></thead><tbody>';
-  for (let r = 0; r < Math.min(max, t.rows.length); r++) h += '<tr>' + (o.rn ? `<td class="rn">${r + 1}</td>` : '') + t.rows[r].map((v, i) => (v.trim() === '' ? '<td class="na">empty</td>' : `<td class="${nums[i] ? 'num' : ''}">${esc(v)}</td>`)).join('') + '</tr>';
+  for (let r = 0; r < Math.min(max, t.rows.length); r++) h += '<tr>' + (o.rn ? `<td class="rn">${r + 1 + (o.rnStart || 0)}</td>` : '') + t.rows[r].map((v, i) => (v.trim() === '' ? '<td class="na">empty</td>' : `<td class="${nums[i] ? 'num' : ''}">${esc(v)}</td>`)).join('') + '</tr>';
   return h + '</tbody></table></div>';
 }
 const needData = (what) => `<div class="empty"><h3>No dataset loaded</h3><div>Load a CSV on the Dashboard to use ${esc(what)}.</div><div class="row"><button class="btn primary" data-act="sample" data-which="orders">Load sample orders</button><button class="btn" data-act="nav" data-page="dashboard">Go to Dashboard</button></div></div>`;
@@ -1878,7 +1893,7 @@ const NAV = [['dashboard', 'Dashboard', I.dash, true], ['explorer', 'Data Explor
 const TITLES = { dashboard: 'Dashboard', explorer: 'Data Explorer', ops: 'Data Operations', clean: 'Data Cleaning', xform: 'Data Transformation', report: 'Export & Reports' };
 function renderSide() {
   const d = ds(), t = tbl();
-  $('#side').innerHTML = `<div class="brand"><div class="logo">${I.logo}</div><span class="t">BeyondCSV</span></div>
+  $('#side').innerHTML = `<div class="brand" data-act="landing" role="button" tabindex="0" title="Back to the start page"><div class="logo">${I.logo}</div><span class="t">BeyondCSV</span></div>
   <nav class="nav" aria-label="Sections"><div class="nav-label">Workspace</div>${NAV.map(([k, l, icon, on, ph]) => on
     ? `<button class="nav-item ${S.page === k ? 'on' : ''}" data-act="nav" data-page="${k}" ${S.page === k ? 'aria-current="page"' : ''}>${icon}<span>${l}</span></button>`
     : `<button class="nav-item later" disabled title="Planned for ${ph}">${icon}<span>${l}</span><span class="soon">${ph}</span></button>`).join('')}</nav>
@@ -1886,7 +1901,7 @@ function renderSide() {
 }
 function renderTop() {
   const d = ds();
-  $('#top').innerHTML = `<div class="crumb">BeyondCSV / <b>${TITLES[S.page]}</b></div>
+  $('#top').innerHTML = `<div class="crumb"><span class="bc">BeyondCSV</span> / <b>${TITLES[S.page]}</b></div>
   ${d ? `<div class="ds-pick"><select id="dsPick" aria-label="Active dataset">${S.datasets.map((x) => opt(x.id, x.name, S.activeId)).join('')}</select></div>
   <button class="btn sm" data-act="undo" ${d.idx > 0 ? '' : 'disabled'} title="Undo last change">${I.undo}Undo</button>
   <button class="btn sm" data-act="redo" ${d.idx < d.hist.length - 1 ? '' : 'disabled'} title="Redo">${I.redo}Redo</button>
@@ -1907,7 +1922,7 @@ const tabsBar = (group, items) => `<div class="tabs" role="tablist">${items.map(
 /* ------------------------------------------------------------ Dashboard */
 function pageDashboard() {
   const d = ds(), t = tbl();
-  let h = head('Welcome to BeyondCSV', 'Explore, clean, transform and analyse CSV files without writing Python. Files are read in this browser tab and never uploaded anywhere.');
+  let h = head('Welcome to <span class="bc">BeyondCSV</span>', 'Explore, clean, transform and analyse CSV files without writing Python. Files are read in this browser tab and never uploaded anywhere.');
   h += `<section class="stack" aria-label="Upload">
     <label class="drop" id="drop" tabindex="0"><strong>Drag and drop a CSV file here, or browse</strong><span>.csv, .tsv, .txt &middot; up to 500&nbsp;MB per file &middot; delimiter and encoding detected automatically</span><span class="or">Files stay in this browser tab. Under about 100&nbsp;MB is comfortable; larger files need plenty of free memory.</span><input type="file" id="file" accept=".csv,.tsv,.txt" multiple hidden></label>
     ${S.datasets.length ? '' : `<div class="card inner" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:16px"><div style="flex:1;min-width:220px"><b>No CSV handy?</b><div class="sub" style="margin:2px 0 0">Try the app with a ready-made sample dataset.</div></div><button class="btn primary" data-act="sample" data-which="orders">Use sample orders (505 rows)</button><button class="btn" data-act="sample" data-which="customers">Use sample customers</button></div>`}
@@ -2109,6 +2124,18 @@ function guideFooter() {
   const here = f[cur];
   return `<nav class="guide" aria-label="Guided navigation">${prev ? a(prev, 'p') : ''}<div class="gtxt"><div class="step">Step ${cur + 1} of ${f.length}</div>${next ? `<b>Next up:</b> ${esc(txt(next))}` : '<b>You have reached the end.</b> Download your results from Export, or go back to refine them.'}</div>${next ? a(next, 'n') : ''}</nav>`;
 }
+
+/* start page */
+function showLanding() {
+  let el = document.getElementById('landing'); if (el) el.remove();
+  el = document.createElement('div'); el.id = 'landing'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Welcome to BeyondCSV');
+  const feats = [[I.explore, 'Explore', 'Quality score, column insights and charts'], [I.clean, 'Clean', 'Missing values, duplicates, spellings, outliers'], [I.xform, 'Transform', 'New columns, group, pivot and bin'], [I.report, 'Export', 'Cleaned data, reports and a Python script']];
+  el.innerHTML = `<div class="l-in"><div class="logo big">${I.logo}</div><h1>Beyond<span>CSV</span></h1><p class="l-sub">Explore. Clean. Transform. Analyse.</p>
+  <div class="l-tags"><span>Free</span><span>No code</span><span>Runs in your browser</span></div>
+  <div class="l-feats">${feats.map(([ic_, t, d]) => `<div class="l-f"><div class="l-ic">${ic_ || ''}</div><b>${t}</b><small>${d}</small></div>`).join('')}</div>
+  <button class="btn primary l-go" id="getStarted" data-act="get-started">Get started &rarr;</button><p class="l-foot">Your files stay in this browser tab and are never uploaded.</p></div>`;
+  document.body.appendChild(el); setTimeout(() => { const b = document.getElementById('getStarted'); if (b) b.focus(); }, 50);
+}
 /* BeyondCSV app layer, part 2: Data Operations, events, startup. (Opened in ui1.js.) */
 
 /* ------------------------------------------------------------ Operations shell */
@@ -2159,13 +2186,15 @@ function filterResult(t) {
 }
 function prevFilter(t) {
   const { m, idx } = filterResult(t), nums = t.cols.map((_, i) => BC.info(t, i).type === 'numeric');
-  const changed = m.activeCount > 0 || U.f.sorts.length > 0, sub = BC.select(t, idx.slice(0, 15));
+  const changed = m.activeCount > 0 || U.f.sorts.length > 0, ps = Number(U.f.ps) || 25, pages = Math.max(1, Math.ceil(idx.length / ps)); U.f.page = Math.min(Math.max(0, U.f.page || 0), pages - 1);
+  const from = U.f.page * ps, sub = BC.select(t, idx.slice(from, from + ps));
+  const pager = idx.length > ps || ps !== 25 ? `<div class="pager"><span>Rows <b>${N(from + 1)}&ndash;${N(Math.min(idx.length, from + ps))}</b> of ${N(idx.length)}</span><span class="sp"></span><label class="f" style="flex-direction:row;align-items:center;gap:6px">Rows per page<select data-bind="f.ps" data-num="1" data-after="prev">${[15, 25, 50, 100, 250, 500].map((n) => opt(n, n, ps)).join('')}</select></label><button class="btn sm" data-act="f-page" data-go="first" ${U.f.page ? '' : 'disabled'}>&laquo;</button><button class="btn sm" data-act="f-page" data-go="prev" ${U.f.page ? '' : 'disabled'}>&lsaquo; Prev</button><span>Page ${U.f.page + 1} of ${N(pages)}</span><button class="btn sm" data-act="f-page" data-go="next" ${U.f.page < pages - 1 ? '' : 'disabled'}>Next &rsaquo;</button><button class="btn sm" data-act="f-page" data-go="last" ${U.f.page < pages - 1 ? '' : 'disabled'}>&raquo;</button></div>` : '';
   const desc = BC.describeConds(U.f);
   return `<h3>Preview</h3><p class="sub">${m.activeCount ? `${U.f.action === 'keep' ? 'Keeping' : 'Removing'} rows where ${esc(desc)}.` : 'Add a condition with a value to filter. Incomplete conditions are ignored.'}</p>
   ${m.errors.map((e) => `<div class="msg err" style="margin-bottom:8px">${esc(e)}</div>`).join('')}
   <div class="meta" style="margin-bottom:8px"><span><b>${N(idx.length)}</b> rows after (of ${N(t.rows.length)} now)</span><span><b>${N(m.idx.length)}</b> matching${m.activeCount ? ` (${(m.idx.length / (t.rows.length || 1) * 100).toFixed(1)}%)` : ''}</span>${U.f.sorts.length ? `<button class="btn sm ghost" data-act="sort-clear">Clear sorting</button>` : ''}</div>
   <p class="sub" style="margin:0 0 8px">To sort, click a column header: once for ascending, again for descending, a third time to clear. Shift-click adds more sort columns. Numbers and dates sort by value, empty cells go last.</p>
-  ${idx.length ? tableHTML(sub, { max: 15, nums, sortable: true }) : '<div class="chart-empty">No rows would remain. Loosen the conditions.</div>'}
+  ${idx.length ? pager + tableHTML(sub, { max: ps, nums, sortable: true, rn: true, rnStart: from }) + (pager && pages > 1 ? '' : '') : '<div class="chart-empty">No rows would remain. Loosen the conditions.</div>'}
   <div class="row" style="margin-top:14px"><button class="btn primary" data-act="filter-apply" ${changed && idx.length ? '' : 'disabled'}>Apply to dataset</button><button class="btn" data-act="filter-new" ${changed && idx.length ? '' : 'disabled'}>Save as new dataset</button></div>`;
 }
 function filterTable(t) { const { idx } = filterResult(t); return BC.select(t, idx); }
@@ -2361,6 +2390,9 @@ function switchTable() { resetEphemeral(); render(); }
 
 const ACT = {
   nav: (el) => go(el.dataset.page),
+  landing: () => showLanding(),
+  'get-started': () => { const l = document.getElementById('landing'); if (l) { l.classList.add('out'); setTimeout(() => l.remove(), 450); } go('dashboard'); },
+  'f-page': (el) => { const g = el.dataset.go, ps = Number(U.f.ps) || 25, n = filterResult(tbl()).idx.length, last = Math.max(0, Math.ceil(n / ps) - 1); U.f.page = g === 'first' ? 0 : g === 'last' ? last : g === 'next' ? Math.min(last, (U.f.page || 0) + 1) : Math.max(0, (U.f.page || 0) - 1); refreshPreview(); const w = document.querySelector('#prev .tablewrap'); if (w) w.scrollTop = 0; },
   goto: (el) => { if (el.dataset.tab) S.tab[el.dataset.page] = el.dataset.tab; go(el.dataset.page); const v = document.getElementById('view'); if (v) v.scrollTop = 0; window.scrollTo(0, 0); },
   goto: (el) => go(el.dataset.page, el.dataset.tab),
   'goto-col': (el) => { S.col = el.dataset.col; S.tab.explorer = 'columns'; renderView(); },
@@ -2379,7 +2411,7 @@ const ACT = {
   'cond-add': (el) => { get(el.dataset.path).conds.push(cond()); renderView(); },
   'cond-del': (el) => { get(el.dataset.path).conds.splice(+el.dataset.i, 1); renderView(); },
   'sort-col': (el, e) => { const c = el.dataset.col, so = U.f.sorts, i = so.findIndex((x) => x.col === c); if (e && e.shiftKey) { if (i < 0) so.push({ col: c, dir: 'asc' }); else if (so[i].dir === 'asc') so[i].dir = 'desc'; else so.splice(i, 1); } else if (i >= 0 && so.length === 1) { if (so[0].dir === 'asc') so[0].dir = 'desc'; else so.splice(0, 1); } else U.f.sorts = [{ col: c, dir: 'asc' }]; refreshPreview(); },
-  'sort-clear': () => { U.f.sorts = []; refreshPreview(); },
+  'sort-clear': () => { U.f.sorts = []; U.f.page = 0; refreshPreview(); },
   'msg-close': (el) => { S.msgs.splice(+el.dataset.i, 1); renderView(); },
   'sort-add': () => { U.f.sorts.push({ col: tbl().cols[0], dir: 'asc' }); renderView(); },
   'sort-del': (el) => { U.f.sorts.splice(+el.dataset.i, 1); renderView(); },
@@ -2429,7 +2461,7 @@ document.addEventListener('click', (e) => {
 });
 function applyBind(el) {
   let v = el.type === 'checkbox' ? el.checked : el.value; if (el.dataset.num) v = v === '' ? '' : Number(v);
-  const path = el.dataset.bind; setPath(path, v);
+  const path = el.dataset.bind; setPath(path, v); if (path === 'f.ps') U.f.page = 0;
   if (/\.conds\.\d+\.col$/.test(path)) { const g = get(path.replace(/\.conds\.\d+\.col$/, '')), t = tbl(); if (g && t) fixGroup(g, t); }
   if (el.type === 'range') { const o = el.parentElement.querySelector('output'); if (o) o.textContent = v; }
 }
@@ -2727,7 +2759,7 @@ function cleanOut(t) {
     const { out, why } = outlierRows(t, cols, o.method, k), CAP = 100;
     list = `<div class="card" style="grid-column:1/-1"><h3>Outliers found <span class="badge">${N(out.length)}</span></h3><p class="sub" style="margin:2px 0 8px">${why.map(esc).join('<br>')}</p>${out.length ? `<div class="tablewrap short"><table><thead><tr><th class="num">Row</th><th>Column</th><th class="num">Value</th><th>Why it is an outlier</th></tr></thead><tbody>${out.slice(0, CAP).map((x) => `<tr><td class="rn">${x.row + 1}</td><td>${esc(x.col)}</td><td class="num"><b>${F(x.v, 4)}</b></td><td>${esc(x.why)}</td></tr>`).join('')}</tbody></table></div>${out.length > CAP ? `<p class="sub" style="margin:6px 0 0">Showing the first ${CAP} of ${N(out.length)}.</p>` : ''}` : '<div class="msg ok">No outliers with these settings.</div>'}</div>`;
   }
-  return layout(`<div class="card"><h3>Detect outliers</h3><p class="sub">Values outside the limits are treated as outliers. Nothing is removed until you apply an action.</p><div class="row" style="margin-bottom:6px"><span class="label">Numeric columns</span><span class="sp"></span><button class="btn sm" data-act="out-pick">Select columns with outliers</button></div>${colChecks('c.out.cols', t, isNum)}<div style="height:12px"></div>
+  return layout(`<div class="card" style="grid-column:1/-1"><h3>Detect outliers</h3><p class="sub">Values outside the limits are treated as outliers. Nothing is removed until you apply an action.</p><div class="row" style="margin-bottom:6px"><span class="label">Numeric columns</span><span class="sp"></span><button class="btn sm" data-act="out-pick">Select columns with outliers</button></div>${colChecks('c.out.cols', t, isNum)}<div style="height:12px"></div>
   <div class="row">${seg('c.out.method', o.method, [['iqr', 'IQR rule'], ['zscore', 'Z-score']], 'view')}<label class="f" style="flex-direction:row;align-items:center;gap:8px">${o.method === 'iqr' ? 'Multiplier' : 'Standard deviations'}<input type="number" step="0.1" min="0.1" value="${esc(o.k)}" data-bind="c.out.k" data-num="1" data-after="view" style="width:90px"></label></div>
   <p class="sub" style="margin-top:8px">${o.method === 'iqr' ? 'Limits are Q1 − k×IQR and Q3 + k×IQR. The usual multiplier is 1.5.' : 'Limits are mean ± k standard deviations. The usual value is 3.'}</p>${table}
   <div class="row" style="margin-top:12px"><span>Action</span>${seg('c.out.action', o.action, [['cap', 'Cap at the limit'], ['blank', 'Make cell empty'], ['remove', 'Remove the rows']])}<span class="sp"></span><button class="btn sm" data-act="out-show" ${cols.length ? '' : 'disabled'}>${o.show ? 'Hide outliers' : 'View outliers and why'}</button></div></div>${list}`, 'clean.out');
@@ -2973,6 +3005,7 @@ $('#root').innerHTML = '<div class="shell"><aside class="side" id="side"></aside
 ingest(new TextEncoder().encode(BC.sampleCustomers()), 'beyondcsv_sample_customers.csv', {}, true);
 ingest(new TextEncoder().encode(BC.sampleOrders()), 'beyondcsv_sample_orders.csv', {}, true);
 render();
+if (!window.__bcTest) showLanding();
 if (window.__bcTest) window.__bc = { S, U, ACT, BC, OP, RP, WR, ds, tbl, BUILD, PREVX };
 })();
 </script>
